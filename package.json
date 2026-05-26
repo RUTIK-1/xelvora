@@ -1,0 +1,20 @@
+{
+  "name": "clothing-store",
+  "version": "1.0.0",
+  "description": "Full-stack clothing ecommerce starter with a Node backend and responsive storefront.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "clothing",
+    "ecommerce",
+    "storefront"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}

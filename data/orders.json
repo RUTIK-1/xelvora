@@ -1,0 +1,23 @@
+[
+  {
+    "id": "e63cbd37-bc16-4b62-a56b-6d7720768c12",
+    "status": "received",
+    "total": 3499,
+    "items": [
+      {
+        "productId": "boxy-denim-jacket",
+        "name": "Boxy Denim Jacket",
+        "price": 3499,
+        "quantity": 1,
+        "size": "S",
+        "color": "Light Blue"
+      }
+    ],
+    "customer": {
+      "name": "rutik",
+      "email": "rutik@gmail.com",
+      "address": "haihfiebf jaioc oewopwck wieifo 265 jninlk l"
+    },
+    "createdAt": "2026-05-26T13:57:18.831Z"
+  }
+]
