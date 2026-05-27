@@ -11,7 +11,11 @@
   <body>
     <header class="site-header">
       <a class="brand" href="#home" aria-label="Threadhaus home">Threadhaus</a>
-      <nav class="nav" aria-label="Primary navigation">
+      <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="primaryNav">
+        <span class="menu-lines" aria-hidden="true"></span>
+        <span class="sr-only">Open menu</span>
+      </button>
+      <nav class="nav" id="primaryNav" aria-label="Primary navigation">
         <a href="#shop">Shop</a>
         <a href="#collections">Collections</a>
         <a href="#about">About</a>

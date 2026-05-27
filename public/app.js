@@ -93,6 +93,8 @@ const formMessage = document.querySelector("#formMessage");
 const searchInput = document.querySelector("#searchInput");
 const filters = document.querySelectorAll(".filter");
 const productStat = document.querySelector("#productStat");
+const menuToggle = document.querySelector("#menuToggle");
+const primaryNav = document.querySelector("#primaryNav");
 
 const money = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -302,5 +304,18 @@ cartButton.addEventListener("click", openCartDrawer);
 closeCart.addEventListener("click", closeCartDrawer);
 overlay.addEventListener("click", closeCartDrawer);
 checkoutForm.addEventListener("submit", submitOrder);
+
+menuToggle.addEventListener("click", () => {
+  const isOpen = primaryNav.classList.toggle("open");
+  menuToggle.classList.toggle("open", isOpen);
+  menuToggle.setAttribute("aria-expanded", String(isOpen));
+});
+
+primaryNav.addEventListener("click", (event) => {
+  if (!event.target.closest("a")) return;
+  primaryNav.classList.remove("open");
+  menuToggle.classList.remove("open");
+  menuToggle.setAttribute("aria-expanded", "false");
+});
 
 loadProducts();
