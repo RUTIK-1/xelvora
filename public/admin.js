@@ -6,6 +6,7 @@ const productList = document.querySelector("#adminProductList");
 const productCount = document.querySelector("#productCount");
 const resetFormButton = document.querySelector("#resetForm");
 const logoutButton = document.querySelector("#logoutButton");
+const topMessage = document.querySelector("#adminTopMessage");
 
 let products = [];
 
@@ -18,6 +19,8 @@ const money = new Intl.NumberFormat("en-IN", {
 function showMessage(text, isError = false) {
   message.textContent = text;
   message.classList.toggle("error", isError);
+  topMessage.textContent = text;
+  topMessage.classList.toggle("error", isError);
 }
 
 function productFromForm() {
