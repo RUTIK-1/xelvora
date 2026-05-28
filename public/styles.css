@@ -656,7 +656,8 @@ h2 {
 }
 
 .admin-form,
-.admin-products {
+.admin-products,
+.admin-orders {
   border: 1px solid var(--line);
   background: var(--panel);
   padding: 22px;
@@ -740,6 +741,50 @@ h2 {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 14px;
+}
+
+.admin-orders {
+  margin-top: 24px;
+}
+
+.admin-order-list {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-order {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.admin-order h3,
+.admin-order p {
+  margin: 0;
+}
+
+.admin-order p {
+  color: var(--muted);
+}
+
+.order-address {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.order-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.order-items span {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 7px 10px;
+  font-size: 0.9rem;
 }
 
 .secondary-button,

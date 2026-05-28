@@ -209,6 +209,11 @@ async function writeProducts(products) {
   await fs.writeFile(PRODUCTS_FILE, JSON.stringify(products, null, 2));
 }
 
+async function readOrders() {
+  await fs.mkdir(path.dirname(ORDERS_FILE), { recursive: true });
+  return fs.readFile(ORDERS_FILE, "utf8").then(JSON.parse).catch(() => []);
+}
+
 function requireAdmin(req, res) {
   if (hasAdminSession(req)) return true;
   sendJson(res, 401, { errors: ["Admin login is required."] });
@@ -341,6 +346,12 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, { products: filtered });
   }
 
+  if (req.method === "GET" && url.pathname === "/api/admin/orders") {
+    if (!requireAdmin(req, res)) return;
+    const orders = await readOrders();
+    return sendJson(res, 200, { orders: orders.slice().reverse() });
+  }
+
   if (req.method === "POST" && url.pathname === "/api/admin/products") {
     if (!requireAdmin(req, res)) return;
 
@@ -411,7 +422,7 @@ async function handleApi(req, res, url) {
       };
 
       await fs.mkdir(path.dirname(ORDERS_FILE), { recursive: true });
-      const existing = await fs.readFile(ORDERS_FILE, "utf8").then(JSON.parse).catch(() => []);
+      const existing = await readOrders();
       existing.push(order);
       await fs.writeFile(ORDERS_FILE, JSON.stringify(existing, null, 2));
 

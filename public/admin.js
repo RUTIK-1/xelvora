@@ -7,8 +7,11 @@ const productCount = document.querySelector("#productCount");
 const resetFormButton = document.querySelector("#resetForm");
 const logoutButton = document.querySelector("#logoutButton");
 const topMessage = document.querySelector("#adminTopMessage");
+const orderList = document.querySelector("#adminOrderList");
+const orderCount = document.querySelector("#orderCount");
 
 let products = [];
+let orders = [];
 
 const money = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -90,6 +93,34 @@ function renderProducts() {
   `).join("");
 }
 
+function renderOrders() {
+  orderCount.textContent = `${orders.length} ${orders.length === 1 ? "order" : "orders"}`;
+
+  if (!orders.length) {
+    orderList.innerHTML = `<p class="empty-cart">No orders yet.</p>`;
+    return;
+  }
+
+  orderList.innerHTML = orders.map((order) => `
+    <article class="admin-order">
+      <div class="product-topline">
+        <div>
+          <h3>${order.customer.name}</h3>
+          <p>${order.customer.email}</p>
+          <p>${new Date(order.createdAt).toLocaleString()}</p>
+        </div>
+        <strong>${money.format(order.total)}</strong>
+      </div>
+      <p class="order-address">${order.customer.address}</p>
+      <div class="order-items">
+        ${order.items.map((item) => `
+          <span>${item.quantity} x ${item.name} / ${item.size} / ${item.color}</span>
+        `).join("")}
+      </div>
+    </article>
+  `).join("");
+}
+
 async function loadProducts() {
   const session = await fetch("/api/admin/session").then((response) => response.json());
   if (!session.authenticated) {
@@ -101,6 +132,16 @@ async function loadProducts() {
   const data = await response.json();
   products = data.products || [];
   renderProducts();
+
+  const ordersResponse = await fetch("/api/admin/orders");
+  if (ordersResponse.status === 401) {
+    window.location.href = "/admin-login.html";
+    return;
+  }
+
+  const ordersData = await ordersResponse.json();
+  orders = ordersData.orders || [];
+  renderOrders();
 }
 
 async function saveProduct(event) {
