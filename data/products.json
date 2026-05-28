@@ -133,5 +133,25 @@
       "XL"
     ],
     "image": "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": "red-textured-urban-eagle-casual",
+    "name": "Red Textured Urban Eagle Casual",
+    "category": "Men",
+    "collection": "Thrift",
+    "price": 799,
+    "rating": 4.5,
+    "badge": "Thrift",
+    "description": "Red textured casual wear from Urban Eagle, styled for everyday street comfort.",
+    "colors": [
+      "Red"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "image": "/products/Red-textured-Urban-Eagle-casual.jpg"
   }
 ]
