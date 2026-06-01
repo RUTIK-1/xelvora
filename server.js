@@ -2,12 +2,15 @@ const http = require("http");
 const fs = require("fs/promises");
 const path = require("path");
 const crypto = require("crypto");
+const { Pool } = require("pg");
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, "public");
 const ORDERS_FILE = path.join(ROOT, "data", "orders.json");
 const PRODUCTS_FILE = path.join(ROOT, "data", "products.json");
+const DATABASE_URL = process.env.DATABASE_URL;
+const pool = DATABASE_URL ? new Pool({ connectionString: DATABASE_URL }) : null;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.ADMIN_KEY || "admin123";
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.createHash("sha256").update(ADMIN_PASSWORD).digest("hex");
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
@@ -192,6 +195,13 @@ function slugify(value) {
 }
 
 async function readProducts() {
+  if (pool) {
+    const products = await readDatabaseValue("products");
+    if (Array.isArray(products)) return products;
+    await writeDatabaseValue("products", seedProducts);
+    return seedProducts;
+  }
+
   await fs.mkdir(path.dirname(PRODUCTS_FILE), { recursive: true });
 
   try {
@@ -205,13 +215,67 @@ async function readProducts() {
 }
 
 async function writeProducts(products) {
+  if (pool) return writeDatabaseValue("products", products);
+
   await fs.mkdir(path.dirname(PRODUCTS_FILE), { recursive: true });
   await fs.writeFile(PRODUCTS_FILE, JSON.stringify(products, null, 2));
 }
 
 async function readOrders() {
+  if (pool) {
+    await ensureDatabase();
+    const result = await pool.query("SELECT value FROM orders ORDER BY created_at");
+    return result.rows.map((row) => row.value);
+  }
+
   await fs.mkdir(path.dirname(ORDERS_FILE), { recursive: true });
   return fs.readFile(ORDERS_FILE, "utf8").then(JSON.parse).catch(() => []);
+}
+
+let databaseReady;
+
+async function ensureDatabase() {
+  if (!pool) return;
+  if (!databaseReady) {
+    databaseReady = pool.query(`
+      CREATE TABLE IF NOT EXISTS app_data (
+        key TEXT PRIMARY KEY,
+        value JSONB NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS orders (
+        id UUID PRIMARY KEY,
+        value JSONB NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+  }
+  await databaseReady;
+}
+
+async function readDatabaseValue(key) {
+  await ensureDatabase();
+  const result = await pool.query("SELECT value FROM app_data WHERE key = $1", [key]);
+  return result.rows[0]?.value;
+}
+
+async function writeDatabaseValue(key, value) {
+  await ensureDatabase();
+  await pool.query(
+    `INSERT INTO app_data (key, value, updated_at)
+     VALUES ($1, $2::jsonb, NOW())
+     ON CONFLICT (key)
+     DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+    [key, JSON.stringify(value)]
+  );
+}
+
+async function writeOrder(order) {
+  await ensureDatabase();
+  await pool.query(
+    "INSERT INTO orders (id, value, created_at) VALUES ($1, $2::jsonb, $3)",
+    [order.id, JSON.stringify(order), order.createdAt]
+  );
 }
 
 function requireAdmin(req, res) {
@@ -421,10 +485,14 @@ async function handleApi(req, res, url) {
         createdAt: new Date().toISOString()
       };
 
-      await fs.mkdir(path.dirname(ORDERS_FILE), { recursive: true });
-      const existing = await readOrders();
-      existing.push(order);
-      await fs.writeFile(ORDERS_FILE, JSON.stringify(existing, null, 2));
+      if (pool) {
+        await writeOrder(order);
+      } else {
+        const existing = await readOrders();
+        existing.push(order);
+        await fs.mkdir(path.dirname(ORDERS_FILE), { recursive: true });
+        await fs.writeFile(ORDERS_FILE, JSON.stringify(existing, null, 2));
+      }
 
       return sendJson(res, 201, { order });
     } catch (error) {
