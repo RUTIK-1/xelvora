@@ -15,6 +15,12 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.ADMIN_KEY || "a
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.createHash("sha256").update(ADMIN_PASSWORD).digest("hex");
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
 
+if (pool) {
+  pool.on("error", (error) => {
+    console.error("Unexpected PostgreSQL connection error:", error);
+  });
+}
+
 const seedProducts = [
   {
     id: "linen-overshirt",
@@ -428,7 +434,8 @@ async function handleApi(req, res, url) {
       products.push(validation.product);
       await writeProducts(products);
       return sendJson(res, 201, { product: validation.product, products });
-    } catch {
+    } catch (error) {
+      console.error("Could not create product:", error);
       return sendJson(res, 400, { errors: ["Could not create product."] });
     }
   }
@@ -449,7 +456,8 @@ async function handleApi(req, res, url) {
       products[index] = validation.product;
       await writeProducts(products);
       return sendJson(res, 200, { product: validation.product, products });
-    } catch {
+    } catch (error) {
+      console.error("Could not update product:", error);
       return sendJson(res, 400, { errors: ["Could not update product."] });
     }
   }
@@ -496,6 +504,7 @@ async function handleApi(req, res, url) {
 
       return sendJson(res, 201, { order });
     } catch (error) {
+      console.error("Could not process order:", error);
       return sendJson(res, 400, { errors: ["Could not process this order."] });
     }
   }
@@ -532,12 +541,21 @@ async function serveStatic(req, res, url) {
   }
 }
 
-const server = http.createServer(async (req, res) => {
+const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
-  if (url.pathname.startsWith("/api/")) return handleApi(req, res, url);
-  return serveStatic(req, res, url);
+  const response = url.pathname.startsWith("/api/")
+    ? handleApi(req, res, url)
+    : serveStatic(req, res, url);
+
+  response.catch((error) => {
+    console.error(`Unhandled request error for ${req.method} ${url.pathname}:`, error);
+    if (!res.headersSent) {
+      return sendJson(res, 500, { errors: ["Server error. Check the service logs."] });
+    }
+    res.end();
+  });
 });
 
 server.listen(PORT, () => {
-  console.log(`Clothing store running at http://localhost:${PORT}`);
+  console.log(`Clothing store running at http://localhost:${PORT} with ${pool ? "PostgreSQL" : "local JSON"} storage`);
 });
