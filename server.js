@@ -11,6 +11,7 @@ const ORDERS_FILE = path.join(ROOT, "data", "orders.json");
 const PRODUCTS_FILE = path.join(ROOT, "data", "products.json");
 const DATABASE_URL = process.env.DATABASE_URL;
 const pool = DATABASE_URL ? new Pool({ connectionString: DATABASE_URL }) : null;
+const CATALOG_IMPORT_VERSION = "2026-06-01-1";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.ADMIN_KEY || "admin123";
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.createHash("sha256").update(ADMIN_PASSWORD).digest("hex");
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
@@ -203,9 +204,7 @@ function slugify(value) {
 async function readProducts() {
   if (pool) {
     const products = await readDatabaseValue("products");
-    if (Array.isArray(products)) return products;
-    await writeDatabaseValue("products", seedProducts);
-    return seedProducts;
+    return importBundledProducts(Array.isArray(products) ? products : []);
   }
 
   await fs.mkdir(path.dirname(PRODUCTS_FILE), { recursive: true });
@@ -218,6 +217,32 @@ async function readProducts() {
   }
 
   return seedProducts;
+}
+
+async function readBundledProducts() {
+  try {
+    const products = JSON.parse(await fs.readFile(PRODUCTS_FILE, "utf8"));
+    if (Array.isArray(products)) return products;
+  } catch {
+    return seedProducts;
+  }
+
+  return seedProducts;
+}
+
+async function importBundledProducts(products) {
+  const importedVersion = await readDatabaseValue("catalog_import_version");
+  if (importedVersion === CATALOG_IMPORT_VERSION) return products;
+
+  const bundledProducts = await readBundledProducts();
+  const existingIds = new Set(products.map((product) => product.id));
+  const mergedProducts = products.concat(
+    bundledProducts.filter((product) => !existingIds.has(product.id))
+  );
+
+  await writeDatabaseValue("products", mergedProducts);
+  await writeDatabaseValue("catalog_import_version", CATALOG_IMPORT_VERSION);
+  return mergedProducts;
 }
 
 async function writeProducts(products) {
