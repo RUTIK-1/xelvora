@@ -4,7 +4,7 @@ const loginMessage = document.querySelector("#loginMessage");
 async function checkSession() {
   const response = await fetch("/api/admin/session");
   const data = await response.json();
-  if (data.authenticated) window.location.href = "admin.html";
+  if (data.authenticated) window.location.href = "./admin.html";
 }
 
 loginForm.addEventListener("submit", async (event) => {
@@ -26,7 +26,7 @@ loginForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  window.location.href = "admin.html";
+  window.location.href = "./admin.html";
 });
 
 checkSession().catch(() => {

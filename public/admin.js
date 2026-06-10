@@ -124,7 +124,7 @@ function renderOrders() {
 async function loadProducts() {
   const session = await fetch("/api/admin/session").then((response) => response.json());
   if (!session.authenticated) {
-    window.location.href = "/admin-login.html";
+    window.location.href = "./admin-login.html";
     return;
   }
 
@@ -135,7 +135,7 @@ async function loadProducts() {
 
   const ordersResponse = await fetch("/api/admin/orders");
   if (ordersResponse.status === 401) {
-    window.location.href = "/admin-login.html";
+    window.location.href = "./admin-login.html";
     return;
   }
 
@@ -157,7 +157,7 @@ async function saveProduct(event) {
   const result = await response.json();
 
   if (response.status === 401) {
-    window.location.href = "/admin-login.html";
+    window.location.href = "./admin-login.html";
     return;
   }
 
@@ -183,7 +183,7 @@ async function deleteProduct(productId) {
   const result = await response.json();
 
   if (response.status === 401) {
-    window.location.href = "/admin-login.html";
+    window.location.href = "./admin-login.html";
     return;
   }
 
@@ -214,6 +214,6 @@ form.addEventListener("submit", saveProduct);
 resetFormButton.addEventListener("click", resetForm);
 logoutButton.addEventListener("click", async () => {
   await fetch("/api/admin/logout", { method: "POST" });
-  window.location.href = "/admin-login.html";
+  window.location.href = "./admin-login.html";
 });
 loadProducts().catch(() => showMessage("Backend API is not running. Deploy this as a Node web service.", true));
