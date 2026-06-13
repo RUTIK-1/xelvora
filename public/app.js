@@ -318,4 +318,6 @@ primaryNav.addEventListener("click", (event) => {
   menuToggle.setAttribute("aria-expanded", "false");
 });
 
+
 loadProducts();
+

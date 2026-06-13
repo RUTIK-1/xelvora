@@ -950,3 +950,27 @@ h2 {
     border-bottom: 1px solid var(--line);
   }
 }
+
+
+.bg-circle{
+    position:fixed;
+    border-radius:50%;
+    z-index:-1;
+}
+
+.circle1{
+    width:400px;
+    height:400px;
+    top:-150px;
+    left:-100px;
+    background:rgba(0, 0, 0, 0.05);
+}
+
+.circle2{
+    width:500px;
+    height:500px;
+    bottom:-200px;
+    right:-150px;
+    background:rgba(0, 0, 0, 0.219);
+}
+
